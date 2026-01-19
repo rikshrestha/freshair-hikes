@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { View, Text } from "react-native";
 import OnboardingScreen from "../../src/screens/OnboardingScreen";
+import TodayPlanScreen from "../../src/screens/TodayPlanScreen";
 import { loadProfile } from "../../src/storage/profile";
 
 export default function HomeScreen() {
@@ -21,10 +21,5 @@ export default function HomeScreen() {
     return <OnboardingScreen onDone={() => setOnboarded(true)} />;
   }
 
-  return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text style={{ fontSize: 22 }}>Today Plan (next)</Text>
-    </View>
-  );
+  return <TodayPlanScreen />;
 }
-
