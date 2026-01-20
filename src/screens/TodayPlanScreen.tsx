@@ -65,17 +65,22 @@ export default function TodayPlanScreen() {
 
   useEffect(() => {
     (async () => {
-      const p = await loadProfile();
-      if (p) {
-        setTrails(pickTrails(p, ALL_TRAILS));
+      try {
+        const p = await loadProfile();
+        if (p) {
+          setTrails(pickTrails(p, ALL_TRAILS));
+        }
+        const active = await loadActiveHike();
+        setActiveHike(active);
+        if (active?.trailId) {
+          const selected = ALL_TRAILS.find((trail) => trail.id === active.trailId) ?? null;
+          setSelectedTrail(selected);
+        }
+      } catch {
+        setTrails([]);
+      } finally {
+        setLoading(false);
       }
-      const active = await loadActiveHike();
-      setActiveHike(active);
-      if (active?.trailId) {
-        const selected = ALL_TRAILS.find((trail) => trail.id === active.trailId) ?? null;
-        setSelectedTrail(selected);
-      }
-      setLoading(false);
     })();
   }, []);
 
@@ -116,6 +121,13 @@ export default function TodayPlanScreen() {
   return (
     <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 60, paddingBottom: 32 }}>
       <Text style={{ fontSize: 26, fontWeight: "700" }}>Today Plan</Text>
+      <Text style={{ marginTop: 6, opacity: 0.8 }}>
+        {loading
+          ? "Loading recommendations..."
+          : trails.length > 0
+          ? `${trails.length} hike${trails.length === 1 ? "" : "s"} fit your preferences today.`
+          : "No recommendations yet. Complete onboarding first."}
+      </Text>
       <View style={{ marginTop: 10, marginBottom: 16 }}>
         {activeHike ? (
           <>

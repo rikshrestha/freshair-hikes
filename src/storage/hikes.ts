@@ -18,8 +18,12 @@ const KEY = "freshair.hikes.v1";
 const ACTIVE_KEY = "freshair.hike.active.v1";
 
 export async function loadHikes(): Promise<HikeSession[]> {
-  const raw = await AsyncStorage.getItem(KEY);
-  return raw ? (JSON.parse(raw) as HikeSession[]) : [];
+  try {
+    const raw = await AsyncStorage.getItem(KEY);
+    return raw ? (JSON.parse(raw) as HikeSession[]) : [];
+  } catch {
+    return [];
+  }
 }
 
 export async function addHike(hike: HikeSession) {
@@ -37,8 +41,12 @@ export type ActiveHike = {
 };
 
 export async function loadActiveHike(): Promise<ActiveHike | null> {
-  const raw = await AsyncStorage.getItem(ACTIVE_KEY);
-  return raw ? (JSON.parse(raw) as ActiveHike) : null;
+  try {
+    const raw = await AsyncStorage.getItem(ACTIVE_KEY);
+    return raw ? (JSON.parse(raw) as ActiveHike) : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function startHike(active: ActiveHike) {

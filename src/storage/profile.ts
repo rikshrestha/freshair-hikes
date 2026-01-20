@@ -14,11 +14,14 @@ export async function saveProfile(profile: UserProfile) {
 }
 
 export async function loadProfile(): Promise<UserProfile | null> {
-  const raw = await AsyncStorage.getItem(KEY);
-  return raw ? (JSON.parse(raw) as UserProfile) : null;
+  try {
+    const raw = await AsyncStorage.getItem(KEY);
+    return raw ? (JSON.parse(raw) as UserProfile) : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function clearProfile() {
   await AsyncStorage.removeItem(KEY);
 }
-

@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useEffect, useState, useCallback } from "react";
+import { Pressable, ScrollView, Text, View } from "react-native";
+import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import { HikeSession, loadHikes } from "../../src/storage/hikes";
 
 function formatDate(ms: number) {
@@ -9,17 +9,28 @@ function formatDate(ms: number) {
 
 export default function HikeDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
   const [hike, setHike] = useState<HikeSession | null>(null);
   const [loading, setLoading] = useState(true);
 
+  async function fetchHike() {
+    setLoading(true);
+    const list = await loadHikes();
+    const match = list.find((item) => item.id === id) ?? null;
+    setHike(match);
+    setLoading(false);
+  }
+
   useEffect(() => {
-    (async () => {
-      const list = await loadHikes();
-      const match = list.find((item) => item.id === id) ?? null;
-      setHike(match);
-      setLoading(false);
-    })();
+    fetchHike();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchHike();
+    }, [id])
+  );
 
   return (
     <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 60, paddingBottom: 32 }}>
@@ -85,6 +96,23 @@ export default function HikeDetailsScreen() {
                 No reflection saved yet.
               </Text>
             )}
+            <Pressable
+              style={{
+                marginTop: 10,
+                paddingVertical: 10,
+                paddingHorizontal: 16,
+                borderRadius: 10,
+                borderWidth: 1,
+                alignSelf: "flex-start",
+              }}
+              onPress={() => router.push(`/hike-reflection/${hike.id}`)}
+            >
+              <Text style={{ fontWeight: "600" }}>
+                {hike.effort || hike.enjoyment || (hike.tags && hike.tags.length) || hike.notes
+                  ? "Edit reflection"
+                  : "Add reflection"}
+              </Text>
+            </Pressable>
           </View>
         </View>
       )}
