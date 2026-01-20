@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { View, Text, Pressable, ScrollView } from "react-native";
 import MapView, { Marker, Polyline, Region } from "react-native-maps";
 import * as Location from "expo-location";
@@ -26,9 +26,10 @@ export default function NavigationScreen() {
   const [lockOnUser, setLockOnUser] = useState(true);
   const [bgEnabled, setBgEnabled] = useState(false);
   const startTimeRef = useRef<number | null>(null);
-  const accent = "#2f5a3b";
   const muted = "#f4f5f6";
   const border = "#e0e0e0";
+  const lockOnUserRef = useRef(lockOnUser);
+  const lastDeltaRef = useRef<number | undefined>(lastRegion?.latitudeDelta);
 
   const totalMiles = useMemo(() => {
     if (!nav) return 0;
@@ -80,6 +81,14 @@ export default function NavigationScreen() {
   }, [nav, totalMiles, userPos]);
 
   useEffect(() => {
+    lockOnUserRef.current = lockOnUser;
+  }, [lockOnUser]);
+
+  useEffect(() => {
+    lastDeltaRef.current = lastRegion?.latitudeDelta;
+  }, [lastRegion]);
+
+  useEffect(() => {
     if (!nav) return;
     // Start hike session for history once navigation begins
     (async () => {
@@ -115,8 +124,9 @@ export default function NavigationScreen() {
           if (paused) return;
           const nextPos = { latitude: loc.coords.latitude, longitude: loc.coords.longitude };
           setUserPos(nextPos);
-          if (lockOnUser) {
-            const delta = Math.max(0.008, Math.min(lastRegion?.latitudeDelta ?? 0.02, 0.025));
+          if (lockOnUserRef.current) {
+            const deltaBase = lastDeltaRef.current ?? 0.02;
+            const delta = Math.max(0.008, Math.min(deltaBase, 0.025));
             mapRef.current?.animateToRegion(
               {
                 latitude: nextPos.latitude,
@@ -140,7 +150,7 @@ export default function NavigationScreen() {
       watchSub.current?.remove();
       watchSub.current = null;
     };
-  }, [nav, paused]);
+  }, [nav, paused, totalMiles]);
 
   // When no navigation session, still show user location on map
   useEffect(() => {
@@ -183,34 +193,7 @@ export default function NavigationScreen() {
     })();
   }, [bgEnabled]);
 
-  useEffect(() => {
-    if (!nav || !userPos) return;
-    const idx = nearestPointIndex(
-      { lat: userPos.latitude, lng: userPos.longitude },
-      nav.routeCoords
-    );
-    if (idx === -1) return;
-    const distOff = haversineMiles(
-      { lat: userPos.latitude, lng: userPos.longitude },
-      nav.routeCoords[idx]
-    );
-    if (distOff > 0.05) {
-      setOffRoute(true);
-      maybeReroute();
-    } else {
-      setOffRoute(false);
-    }
-    const dest = nav.routeCoords[nav.routeCoords.length - 1];
-    const distToEnd = haversineMiles({ lat: userPos.latitude, lng: userPos.longitude }, dest);
-    if (remainingMiles < 0.05 || distToEnd < 0.03) {
-      setArrived(true);
-      setStatus("Arrived at trail end.");
-    } else {
-      setArrived(false);
-    }
-  }, [nav, userPos]);
-
-  async function maybeReroute() {
+  const maybeReroute = useCallback(async () => {
     if (!nav || !userPos) return;
     if (nav.mode === "path") return;
     const now = Date.now();
@@ -256,7 +239,34 @@ export default function NavigationScreen() {
       }
       await logEvent(`Reroute failed: ${String(err)}`);
     }
-  }
+  }, [nav, offline, userPos]);
+
+  useEffect(() => {
+    if (!nav || !userPos) return;
+    const idx = nearestPointIndex(
+      { lat: userPos.latitude, lng: userPos.longitude },
+      nav.routeCoords
+    );
+    if (idx === -1) return;
+    const distOff = haversineMiles(
+      { lat: userPos.latitude, lng: userPos.longitude },
+      nav.routeCoords[idx]
+    );
+    if (distOff > 0.05) {
+      setOffRoute(true);
+      maybeReroute();
+    } else {
+      setOffRoute(false);
+    }
+    const dest = nav.routeCoords[nav.routeCoords.length - 1];
+    const distToEnd = haversineMiles({ lat: userPos.latitude, lng: userPos.longitude }, dest);
+    if (remainingMiles < 0.05 || distToEnd < 0.03) {
+      setArrived(true);
+      setStatus("Arrived at trail end.");
+    } else {
+      setArrived(false);
+    }
+  }, [maybeReroute, nav, remainingMiles, userPos]);
 
   function endNav() {
     watchSub.current?.remove();
@@ -468,7 +478,7 @@ export default function NavigationScreen() {
         setOffline(false);
         setStatus(null);
       }
-    } catch (_err) {
+    } catch {
       // keep offline
     }
   }

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { FlatList, ScrollView, Text, View, Pressable, Linking, TextInput } from "react-native";
+import { FlatList, ScrollView, Text, View, Pressable, TextInput } from "react-native";
 import * as Location from "expo-location";
 import SideDrawer, { DrawerTrigger } from "../src/components/SideDrawer";
 import { getTrails } from "../src/data/trailStore";

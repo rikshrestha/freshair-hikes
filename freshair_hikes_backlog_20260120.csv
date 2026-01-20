@@ -1,0 +1,36 @@
+Title,Area,Type,Priority,Status
+Finalize tab navigation structure (Home / Explore / Navigate / History / Profile),UI,Feature,P0,Backlog
+Home page — Today’s Plan (3 recommended trails),UI,Feature,P0,Backlog
+Home page — Quick actions row (Resume, Ask AI, Explore),UI,Feature,P1,Backlog
+Explore page scaffold (map-first discovery),UI,Feature,P0,Backlog
+Explore — bottom sheet trail list,UI,Feature,P0,Backlog
+Explore — search trails,UI,Feature,P0,Backlog
+Explore — filter UI (difficulty, distance, elevation, park type),UI,Feature,P0,Backlog
+Explore — marker ↔ list selection sync,UI,Feature,P0,Backlog
+Trail Detail page redesign (hero stats + sections),UI,Feature,P0,Backlog
+Trail Detail — sticky Start/Resume CTA,UI,Feature,P0,Backlog
+Navigation screen UI polish,UI,Feature,P1,Backlog
+Resume active hike flow,UI,Feature,P1,Backlog
+AI chat UI (local-first conversational entry),AI,Feature,P0,Backlog
+Conversational refinement engine (slot-filling),AI,Feature,P0,Backlog
+Intent extraction via LLM (JSON-only, validated),AI,Feature,P0,Backlog
+Deterministic trail filtering engine (shared by Explore + AI),AI,Feature,P0,Backlog
+Deterministic recommendTrails ranking engine,AI,Feature,P0,Backlog
+Recommendation explainability generator (why this trail),AI,Feature,P1,Backlog
+State park allow-list & landmark classification,AI,Feature,P0,Backlog
+History page — completed hikes list,UI,Feature,P1,Backlog
+Hike reflections & notes,UI,Feature,P1,Backlog
+DataStore abstraction (local-first persistence),Infra,Feature,P1,Backlog
+Migrate favorites to DataStore,Infra,Refactor,P2,Backlog
+Migrate hike history to DataStore,Infra,Refactor,P2,Backlog
+Migrate reflections to DataStore,Infra,Refactor,P2,Backlog
+Local trail reviews (rating + text),AI,Feature,P2,Backlog
+Root error boundary,Infra,Feature,P0,Backlog
+Telemetry breadcrumbs (privacy-safe),Infra,Feature,P0,Backlog
+CI pipeline (lint, format, typecheck, tests),Infra,Chore,P0,Backlog
+Core unit tests (helpers, recommender, storage),QA,Test,P0,Backlog
+Config & secrets hardening (.env + validation),Infra,Chore,P0,Backlog
+ADR — navigation & page structure,Docs,Chore,P0,Backlog
+ADR — AI local-first architecture,Docs,Chore,P1,Backlog
+README — Home / Explore / AI usage,Docs,Chore,P1,Backlog
+

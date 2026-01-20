@@ -15,23 +15,22 @@ export default function HikeDetailsScreen() {
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  async function fetchHike() {
+  const fetchHike = useCallback(async () => {
     setLoading(true);
     const list = await loadHikes();
     const match = list.find((item) => item.id === id) ?? null;
     setHike(match);
     setLoading(false);
-  }
+  }, [id]);
 
   useEffect(() => {
     fetchHike();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [fetchHike]);
 
   useFocusEffect(
     useCallback(() => {
       fetchHike();
-    }, [id])
+    }, [fetchHike])
   );
 
   return (

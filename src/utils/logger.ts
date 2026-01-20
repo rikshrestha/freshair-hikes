@@ -1,16 +1,24 @@
-import * as FileSystem from "expo-file-system";
+import {
+  documentDirectory,
+  EncodingType,
+  readAsStringAsync,
+  writeAsStringAsync,
+} from "expo-file-system";
 
-const LOG_FILE = `${FileSystem.documentDirectory ?? ""}freshair.log`;
+const LOG_FILE = `${documentDirectory ?? ""}freshair.log`;
 
 export async function logEvent(message: string) {
   const ts = new Date().toISOString();
   const line = `[${ts}] ${message}\n`;
   try {
-    if (!FileSystem.documentDirectory) {
+    if (!documentDirectory) {
       console.log(line.trim());
       return;
     }
-    await FileSystem.writeAsStringAsync(LOG_FILE, line, { encoding: FileSystem.EncodingType.UTF8, append: true });
+    const existing = await readAsStringAsync(LOG_FILE, { encoding: EncodingType.UTF8 }).catch(
+      () => ""
+    );
+    await writeAsStringAsync(LOG_FILE, `${existing}${line}`, { encoding: EncodingType.UTF8 });
   } catch (err) {
     console.warn("logEvent failed", err);
     console.log(line.trim());
@@ -18,9 +26,9 @@ export async function logEvent(message: string) {
 }
 
 export async function readLog(): Promise<string> {
-  if (!FileSystem.documentDirectory) return "";
+  if (!documentDirectory) return "";
   try {
-    return await FileSystem.readAsStringAsync(LOG_FILE, { encoding: FileSystem.EncodingType.UTF8 });
+    return await readAsStringAsync(LOG_FILE, { encoding: EncodingType.UTF8 });
   } catch {
     return "";
   }

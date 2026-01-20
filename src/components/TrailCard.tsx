@@ -26,8 +26,6 @@ export default function TrailCard({
   showLongPressHint = false,
   isFavorite = false,
 }: Props) {
-  const canNavigate = trail.lat !== undefined && trail.lng !== undefined;
-
   return (
     <Pressable
       onPress={onSelect}

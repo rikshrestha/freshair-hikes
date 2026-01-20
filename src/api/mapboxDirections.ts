@@ -14,7 +14,7 @@ type MapboxRoute = {
   };
   distance: number; // meters
   duration: number; // seconds
-  legs?: Array<{ steps?: MapboxStep[] }>;
+  legs?: { steps?: MapboxStep[] }[];
 };
 
 export async function getWalkingRoute(
@@ -25,7 +25,7 @@ export async function getWalkingRoute(
   distanceMeters: number;
   durationSec: number;
   geometry: MapboxRoute["geometry"];
-  steps: Array<{ instruction: string; distanceMeters: number; durationSec: number }>;
+  steps: { instruction: string; distanceMeters: number; durationSec: number }[];
 }> {
   if (!token) {
     throw new Error("Mapbox token missing");
