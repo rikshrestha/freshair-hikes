@@ -4,56 +4,12 @@ import { useRouter, useFocusEffect } from "expo-router";
 import { loadProfile } from "../storage/profile";
 import { maxDifficultyAllowed, rankTrails, readinessScore, Trail } from "../logic/recommend";
 import { loadActiveHike, startHike, endHike, newId, ActiveHike, loadHikes } from "../storage/hikes";
+import { getTrails } from "../data/trailStore";
+import { loadFavorites, toggleFavorite } from "../storage/favorites";
+import TrailCard from "../components/TrailCard";
+import SideDrawer, { DrawerTrigger } from "../components/SideDrawer";
 
-const ALL_TRAILS: Trail[] = [
-  { id: "t1", name: "Lake Loop", difficulty: "Easy", distanceMi: 2.2, estTimeMin: 50, why: "Easy start." },
-  { id: "t2", name: "Forest Path", difficulty: "Easy", distanceMi: 3.0, estTimeMin: 70, why: "Comfortable distance." },
-  { id: "t3", name: "Ridge View", difficulty: "Moderate", distanceMi: 4.1, estTimeMin: 95, why: "Gentle climb." },
-  { id: "t4", name: "Summit Push", difficulty: "Strenuous", distanceMi: 7.5, estTimeMin: 180, why: "Big challenge." },
-  { id: "t5", name: "Meadow Walk", difficulty: "Easy", distanceMi: 1.8, estTimeMin: 40, why: "Short and scenic." },
-  { id: "t6", name: "River Bend", difficulty: "Easy", distanceMi: 2.6, estTimeMin: 60, why: "Flat and relaxing." },
-  { id: "t7", name: "Pine Grove", difficulty: "Easy", distanceMi: 3.4, estTimeMin: 80, why: "Shaded woodland." },
-  { id: "t8", name: "Canyon Lookout", difficulty: "Moderate", distanceMi: 4.8, estTimeMin: 110, why: "Views and steady climb." },
-  { id: "t9", name: "Creek Ridge", difficulty: "Moderate", distanceMi: 5.2, estTimeMin: 120, why: "Rolling elevation." },
-  { id: "t10", name: "Granite Pass", difficulty: "Moderate", distanceMi: 6.0, estTimeMin: 140, why: "Longer but manageable." },
-  { id: "t11", name: "Maple Hollow", difficulty: "Easy", distanceMi: 2.0, estTimeMin: 45, why: "Gentle with shade." },
-  { id: "t12", name: "Sunset Loop", difficulty: "Easy", distanceMi: 2.9, estTimeMin: 65, why: "Great evening stroll." },
-  { id: "t13", name: "Boulder Rise", difficulty: "Moderate", distanceMi: 4.6, estTimeMin: 105, why: "Steady incline." },
-  { id: "t14", name: "Aspen Traverse", difficulty: "Moderate", distanceMi: 5.5, estTimeMin: 130, why: "Moderate climb, big views." },
-];
-
-function Card({
-  trail,
-  disabled,
-  selected,
-  onPress,
-}: {
-  trail: Trail;
-  disabled: boolean;
-  selected: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      style={{
-        padding: 14,
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: selected ? "#2f5a3b" : "#000",
-        marginBottom: 12,
-        opacity: disabled ? 0.6 : 1,
-      }}
-      onPress={onPress}
-      disabled={disabled}
-    >
-      <Text style={{ fontSize: 18, fontWeight: "600" }}>{trail.name}</Text>
-      <Text style={{ marginTop: 4 }}>
-        {trail.difficulty} • {trail.distanceMi} mi • ~{trail.estTimeMin} min
-      </Text>
-      <Text style={{ marginTop: 8, opacity: 0.8 }}>{trail.why}</Text>
-    </Pressable>
-  );
-}
+let ALL_TRAILS: Trail[] = [];
 
 export default function TodayPlanScreen() {
   const [trails, setTrails] = useState<Trail[]>([]);
@@ -64,14 +20,22 @@ export default function TodayPlanScreen() {
   const [selectedTrail, setSelectedTrail] = useState<Trail | null>(null);
   const [readiness, setReadiness] = useState<number | null>(null);
   const [maxDiff, setMaxDiff] = useState<number | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [otherLimit, setOtherLimit] = useState(20);
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [nudge, setNudge] = useState<string | null>(null);
   const router = useRouter();
 
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
+      if (ALL_TRAILS.length === 0) {
+        ALL_TRAILS = await getTrails();
+      }
       const p = await loadProfile();
       const history = await loadHikes();
       const active = await loadActiveHike();
+      setFavorites(await loadFavorites());
       setActiveHike(active);
       if (p) {
         const r = readinessScore(p, history);
@@ -80,11 +44,24 @@ export default function TodayPlanScreen() {
         const ranked = rankTrails(p, history, ALL_TRAILS);
         setTrails(ranked.slice(0, 3));
         setOtherTrails(ranked.slice(3));
+        setOtherLimit(20);
+        if (history.length > 0) {
+          const last = history[0].startedAt;
+          const days = Math.floor((Date.now() - last) / (1000 * 60 * 60 * 24));
+          if (days >= 10) {
+            setNudge(`It's been ${days} days since your last hike. Ready to get back out?`);
+          } else {
+            setNudge(null);
+          }
+        } else {
+          setNudge("No hikes yet—start one to kick off your streak.");
+        }
       } else {
         setReadiness(null);
         setMaxDiff(null);
         setTrails([]);
         setOtherTrails([]);
+        setNudge(null);
       }
       if (active?.trailId) {
         const selected = ALL_TRAILS.find((trail) => trail.id === active.trailId) ?? null;
@@ -147,53 +124,64 @@ export default function TodayPlanScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 60, paddingBottom: 32 }}>
-      <Text style={{ fontSize: 26, fontWeight: "700" }}>Today Plan</Text>
-      <Text style={{ marginTop: 6, opacity: 0.8 }}>
-        {loading
-          ? "Loading recommendations..."
-          : trails.length > 0
-          ? `${trails.length} hike${trails.length === 1 ? "" : "s"} fit your preferences today.`
-          : "No recommendations yet. Complete onboarding first."}
-      </Text>
-      {readiness !== null && maxDiff !== null ? (
-        <Text style={{ marginTop: 4, opacity: 0.8 }}>
-          Readiness {readiness}/4 • Showing {maxDiff === 1 ? "Easy only" : maxDiff === 2 ? "Easy + Moderate" : "all levels"}
+    <View style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 60, paddingBottom: 32 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
+        <DrawerTrigger onPress={() => setMenuOpen(true)} />
+        <Text style={{ fontSize: 26, fontWeight: "700", marginLeft: 6 }}>Today Plan</Text>
+      </View>
+        <Text style={{ marginTop: 6, opacity: 0.8 }}>
+          {loading
+            ? "Loading recommendations..."
+            : trails.length > 0
+            ? `${trails.length} hike${trails.length === 1 ? "" : "s"} fit your preferences today.`
+            : "No recommendations yet. Complete onboarding first."}
+        </Text>
+        {readiness !== null && maxDiff !== null ? (
+          <Text style={{ marginTop: 4, opacity: 0.8 }}>
+            Readiness {readiness}/4 • Showing {maxDiff === 1 ? "Easy only" : maxDiff === 2 ? "Easy + Moderate" : "all levels"}
+          </Text>
+      ) : null}
+      {nudge ? (
+        <Text style={{ marginTop: 6, opacity: 0.8, color: "#a15c00" }}>
+          {nudge}
         </Text>
       ) : null}
-      <View style={{ marginTop: 10, marginBottom: 16 }}>
-        {activeHike ? (
-          <>
-            <Text style={{ opacity: 0.8 }}>
-              Hike in progress{activeHike.trailName ? `: ${activeHike.trailName}` : ""}.
-            </Text>
-            <Text style={{ marginTop: 4, opacity: 0.8 }}>
-              Elapsed: {elapsedMin} min
-            </Text>
-            <Pressable
-              style={{
-                marginTop: 10,
-                paddingVertical: 10,
-                paddingHorizontal: 16,
-                borderRadius: 10,
-                borderWidth: 1,
-                alignSelf: "flex-start",
-              }}
-              onPress={handleEnd}
-            >
-              <Text style={{ fontWeight: "600" }}>End hike</Text>
-            </Pressable>
-          </>
-        ) : (
-          <>
-            <Text style={{ opacity: 0.8 }}>
-              Ready to start a hike? Pick a trail, then start.
-            </Text>
-            <Pressable
-              style={{
-                marginTop: 10,
-                paddingVertical: 10,
-                paddingHorizontal: 16,
+        <View style={{ marginTop: 10, marginBottom: 16 }}>
+          {activeHike ? (
+            <>
+              <Text style={{ opacity: 0.8 }}>
+                Hike in progress{activeHike.trailName ? `: ${activeHike.trailName}` : ""}.
+              </Text>
+              <Text style={{ marginTop: 4, opacity: 0.8 }}>
+                Elapsed: {elapsedMin} min
+              </Text>
+              <Pressable
+                style={{
+                  marginTop: 10,
+                  paddingVertical: 10,
+                  paddingHorizontal: 16,
+                  borderRadius: 10,
+                  borderWidth: 1,
+                  alignSelf: "flex-start",
+                }}
+                onPress={handleEnd}
+                accessibilityRole="button"
+                accessibilityLabel="End hike"
+              >
+                <Text style={{ fontWeight: "600" }}>End hike</Text>
+              </Pressable>
+            </>
+          ) : (
+            <>
+              <Text style={{ opacity: 0.8 }}>
+                Ready to start a hike? Pick a trail, then start.
+              </Text>
+              <Pressable
+                style={{
+                  marginTop: 10,
+                  paddingVertical: 10,
+                  paddingHorizontal: 16,
                 borderRadius: 10,
                 borderWidth: 1,
                 alignSelf: "flex-start",
@@ -201,57 +189,94 @@ export default function TodayPlanScreen() {
               }}
               onPress={handleStart}
               disabled={!selectedTrail}
+              accessibilityRole="button"
+              accessibilityLabel="Start hike"
             >
               <Text style={{ fontWeight: "600" }}>Start hike</Text>
             </Pressable>
-            {selectedTrail ? (
-              <Text style={{ marginTop: 8, opacity: 0.8 }}>
-                Selected: {selectedTrail.name}
-              </Text>
+              {selectedTrail ? (
+                <Text style={{ marginTop: 8, opacity: 0.8 }}>
+                  Selected: {selectedTrail.name}
+                </Text>
+              ) : null}
+            </>
+          )}
+        </View>
+
+        {loading ? (
+          <Text>Loading...</Text>
+        ) : trails.length === 0 ? (
+          <Text style={{ opacity: 0.8 }}>
+            No recommendations yet. Complete onboarding first.
+          </Text>
+        ) : (
+          <>
+            <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 8 }}>
+              Recommended Trails
+            </Text>
+            {trails.map((t) => (
+              <TrailCard
+                key={`rec-${t.id}`}
+                trail={t}
+                disabled={!!activeHike}
+                selected={selectedTrail?.id === t.id}
+                onSelect={() => setSelectedTrail(t)}
+                onLongPress={() => router.push(`/trail/${t.id}`)}
+                showSource={false}
+                showWhy={false}
+                showLongPressHint
+                isFavorite={favorites.has(t.id)}
+                onToggleFavorite={async () => {
+                  const next = await toggleFavorite(t.id);
+                  setFavorites(next);
+                }}
+              />
+            ))}
+
+            {otherTrails.length > 0 ? (
+              <>
+                <Text style={{ fontSize: 18, fontWeight: "700", marginVertical: 8 }}>
+                  Other Options
+                </Text>
+                {otherTrails.slice(0, otherLimit).map((t) => (
+                  <TrailCard
+                    key={`other-${t.id}`}
+                    trail={t}
+                    disabled={!!activeHike}
+                    selected={selectedTrail?.id === t.id}
+                    onSelect={() => setSelectedTrail(t)}
+                    onLongPress={() => router.push(`/trail/${t.id}`)}
+                    showSource={false}
+                    showWhy={false}
+                    showLongPressHint
+                    isFavorite={favorites.has(t.id)}
+                    onToggleFavorite={async () => {
+                      const next = await toggleFavorite(t.id);
+                      setFavorites(next);
+                    }}
+                  />
+                ))}
+                {otherTrails.length > otherLimit ? (
+                  <Pressable
+                    onPress={() => setOtherLimit((prev) => prev + 20)}
+                    style={{
+                      paddingVertical: 10,
+                      paddingHorizontal: 14,
+                      borderRadius: 10,
+                      borderWidth: 1,
+                      alignSelf: "flex-start",
+                      marginTop: 6,
+                    }}
+                  >
+                    <Text style={{ fontWeight: "600" }}>Show more</Text>
+                  </Pressable>
+                ) : null}
+              </>
             ) : null}
           </>
         )}
-      </View>
-
-      {loading ? (
-        <Text>Loading...</Text>
-      ) : trails.length === 0 ? (
-        <Text style={{ opacity: 0.8 }}>
-          No recommendations yet. Complete onboarding first.
-        </Text>
-      ) : (
-        <>
-          <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 8 }}>
-            Recommended Trails
-          </Text>
-          {trails.map((t) => (
-            <Card
-              key={t.id}
-              trail={t}
-              disabled={!!activeHike}
-              selected={selectedTrail?.id === t.id}
-              onPress={() => setSelectedTrail(t)}
-            />
-          ))}
-
-          {otherTrails.length > 0 ? (
-            <>
-              <Text style={{ fontSize: 18, fontWeight: "700", marginVertical: 8 }}>
-                Other Options
-              </Text>
-              {otherTrails.map((t) => (
-                <Card
-                  key={t.id}
-                  trail={t}
-                  disabled={!!activeHike}
-                  selected={selectedTrail?.id === t.id}
-                  onPress={() => setSelectedTrail(t)}
-                />
-              ))}
-            </>
-          ) : null}
-        </>
-      )}
-    </ScrollView>
+      </ScrollView>
+      <SideDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
+    </View>
   );
 }

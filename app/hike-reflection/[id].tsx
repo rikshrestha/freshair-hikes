@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ScrollView, Text, Pressable, TextInput, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { HikeSession, loadHikes, saveHikeReflection } from "../../src/storage/hikes";
+import SideDrawer, { DrawerTrigger } from "../../src/components/SideDrawer";
 
 const TAGS = ["sunset", "kids", "dog", "crowded", "windy", "muddy"];
 
@@ -50,6 +51,7 @@ export default function ReflectionScreen() {
   const [tags, setTags] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -96,11 +98,17 @@ export default function ReflectionScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 60, paddingBottom: 32 }}>
-      <Text style={{ fontSize: 26, fontWeight: "700" }}>Reflection</Text>
-      <Text style={{ marginTop: 6, opacity: 0.8 }}>
-        {hike.trailName ?? "Hike session"}
-      </Text>
+    <View style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 60, paddingBottom: 32 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
+          <DrawerTrigger onPress={() => setMenuOpen(true)} />
+          <View>
+            <Text style={{ fontSize: 26, fontWeight: "700", marginLeft: 6 }}>Reflection</Text>
+            <Text style={{ marginTop: 2, opacity: 0.8 }}>
+              {hike.trailName ?? "Hike session"}
+            </Text>
+          </View>
+        </View>
 
       <NumberRow label="Effort (1-10)" value={effort} onChange={setEffort} />
       <NumberRow label="Enjoyment (1-10)" value={enjoyment} onChange={setEnjoyment} />
@@ -153,23 +161,25 @@ export default function ReflectionScreen() {
         />
       </View>
 
-      <Pressable
-        style={{
-          marginTop: 20,
-          paddingVertical: 12,
-          paddingHorizontal: 16,
-          borderRadius: 10,
-          borderWidth: 1,
-          alignSelf: "flex-start",
-          opacity: canSave ? 1 : 0.4,
-        }}
-        onPress={handleSave}
-        disabled={!canSave || saving}
-      >
-        <Text style={{ fontWeight: "600" }}>
-          {saving ? "Saving..." : "Save reflection"}
-        </Text>
-      </Pressable>
-    </ScrollView>
+        <Pressable
+          style={{
+            marginTop: 20,
+            paddingVertical: 12,
+            paddingHorizontal: 16,
+            borderRadius: 10,
+            borderWidth: 1,
+            alignSelf: "flex-start",
+            opacity: canSave ? 1 : 0.4,
+          }}
+          onPress={handleSave}
+          disabled={!canSave || saving}
+        >
+          <Text style={{ fontWeight: "600" }}>
+            {saving ? "Saving..." : "Save reflection"}
+          </Text>
+        </Pressable>
+      </ScrollView>
+      <SideDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
+    </View>
   );
 }

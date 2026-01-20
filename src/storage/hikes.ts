@@ -59,7 +59,7 @@ export async function startHike(active: ActiveHike) {
   await AsyncStorage.setItem(ACTIVE_KEY, JSON.stringify(active));
 }
 
-export async function endHike() {
+export async function endHike(overrides?: Partial<HikeSession>) {
   const active = await loadActiveHike();
   if (!active) return null;
   const endedAt = Date.now();
@@ -75,6 +75,7 @@ export async function endHike() {
     actualDistanceMi: active.actualDistanceMi,
     actualTimeMin: active.actualTimeMin,
     elevationGain: active.elevationGain,
+    ...overrides,
   };
   await addHike(session);
   await AsyncStorage.removeItem(ACTIVE_KEY);

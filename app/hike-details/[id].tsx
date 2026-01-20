@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import { HikeSession, loadHikes } from "../../src/storage/hikes";
+import SideDrawer, { DrawerTrigger } from "../../src/components/SideDrawer";
 
 function formatDate(ms: number) {
   return new Date(ms).toLocaleString();
@@ -12,6 +13,7 @@ export default function HikeDetailsScreen() {
   const router = useRouter();
   const [hike, setHike] = useState<HikeSession | null>(null);
   const [loading, setLoading] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   async function fetchHike() {
     setLoading(true);
@@ -33,8 +35,12 @@ export default function HikeDetailsScreen() {
   );
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 60, paddingBottom: 32 }}>
-      <Text style={{ fontSize: 26, fontWeight: "700" }}>Hike Details</Text>
+    <View style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 60, paddingBottom: 32 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
+          <DrawerTrigger onPress={() => setMenuOpen(true)} />
+          <Text style={{ fontSize: 26, fontWeight: "700", marginLeft: 6 }}>Hike Details</Text>
+        </View>
 
       {loading ? (
         <Text style={{ marginTop: 12 }}>Loading...</Text>
@@ -116,6 +122,8 @@ export default function HikeDetailsScreen() {
           </View>
         </View>
       )}
-    </ScrollView>
+      </ScrollView>
+      <SideDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
+    </View>
   );
 }

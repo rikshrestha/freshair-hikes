@@ -4,6 +4,7 @@ import { Picker } from "@react-native-picker/picker";
 import { useFocusEffect } from "expo-router";
 import { loadProfile, saveProfile, UserProfile } from "../../src/storage/profile";
 import { loadHikes } from "../../src/storage/hikes";
+import SideDrawer, { DrawerTrigger } from "../../src/components/SideDrawer";
 
 const AGE_RANGES = ["18-24", "25-34", "35-44", "45-54", "55+"];
 const PACES = ["slow", "normal", "fast"];
@@ -26,6 +27,7 @@ export default function ProfileScreen() {
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [stats, setStats] = useState<{ totalHikes: number; totalMinutes: number; totalMiles: number; lastHike?: number; firstHike?: number } | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const profileReady = useMemo(() => !!draft, [draft]);
 
@@ -75,8 +77,12 @@ export default function ProfileScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 60, paddingBottom: 32 }}>
-      <Text style={{ fontSize: 26, fontWeight: "700" }}>Profile</Text>
+    <View style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 60, paddingBottom: 32 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
+          <DrawerTrigger onPress={() => setMenuOpen(true)} />
+          <Text style={{ fontSize: 26, fontWeight: "700", marginLeft: 6 }}>Profile</Text>
+        </View>
       <Text style={{ marginTop: 6, opacity: 0.8 }}>
         Update your preferences and see your hiking stats.
       </Text>
@@ -207,7 +213,7 @@ export default function ProfileScreen() {
             </Text>
             {stats.totalMiles > 0 ? (
               <Text style={{ marginTop: 4, opacity: 0.8 }}>
-                Total miles: {stats.totalMiles.toFixed(1)} mi
+                Total miles: {stats.totalMiles.toFixed(2)} mi
               </Text>
             ) : null}
             {stats.firstHike ? (
@@ -227,6 +233,8 @@ export default function ProfileScreen() {
           </Text>
         )}
       </View>
-    </ScrollView>
+      </ScrollView>
+      <SideDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
+    </View>
   );
 }

@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
+import SideDrawer, { DrawerTrigger } from "../../src/components/SideDrawer";
 
 const tips = [
   { title: "Safety basics", body: "Tell someone your route, check weather, carry a charged phone and a map." },
@@ -12,9 +14,14 @@ const tips = [
 ];
 
 export default function GuideScreen() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 60, paddingBottom: 32 }}>
-      <Text style={{ fontSize: 26, fontWeight: "700" }}>Trail Guide</Text>
+      <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
+        <DrawerTrigger onPress={() => setMenuOpen(true)} />
+        <Text style={{ fontSize: 26, fontWeight: "700" }}>Trail Guide</Text>
+      </View>
       <Text style={{ marginTop: 6, marginBottom: 12, opacity: 0.8 }}>
         Quick tips for safer, smoother hikes.
       </Text>
@@ -33,6 +40,7 @@ export default function GuideScreen() {
           <Text style={{ marginTop: 6, opacity: 0.85 }}>{tip.body}</Text>
         </View>
       ))}
+      <SideDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
     </ScrollView>
   );
 }

@@ -8,6 +8,10 @@ export type Trail = {
   distanceMi: number;
   estTimeMin: number;
   why: string;
+  lat?: number;
+  lng?: number;
+  source?: string;
+  path?: { lat: number; lng: number }[];
 };
 
 const DIFF: Record<Trail["difficulty"], number> = {
