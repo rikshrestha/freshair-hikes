@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ScrollView, Text, Pressable, View } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { loadProfile } from "../storage/profile";
-import { pickTrails, Trail } from "../logic/recommend";
-import { loadActiveHike, startHike, endHike, newId, ActiveHike } from "../storage/hikes";
+import { maxDifficultyAllowed, rankTrails, readinessScore, Trail } from "../logic/recommend";
+import { loadActiveHike, startHike, endHike, newId, ActiveHike, loadHikes } from "../storage/hikes";
 
 const ALL_TRAILS: Trail[] = [
   { id: "t1", name: "Lake Loop", difficulty: "Easy", distanceMi: 2.2, estTimeMin: 50, why: "Easy start." },
@@ -57,32 +57,60 @@ function Card({
 
 export default function TodayPlanScreen() {
   const [trails, setTrails] = useState<Trail[]>([]);
+  const [otherTrails, setOtherTrails] = useState<Trail[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeHike, setActiveHike] = useState<ActiveHike | null>(null);
   const [now, setNow] = useState(Date.now());
   const [selectedTrail, setSelectedTrail] = useState<Trail | null>(null);
+  const [readiness, setReadiness] = useState<number | null>(null);
+  const [maxDiff, setMaxDiff] = useState<number | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const p = await loadProfile();
-        if (p) {
-          setTrails(pickTrails(p, ALL_TRAILS));
-        }
-        const active = await loadActiveHike();
-        setActiveHike(active);
-        if (active?.trailId) {
-          const selected = ALL_TRAILS.find((trail) => trail.id === active.trailId) ?? null;
-          setSelectedTrail(selected);
-        }
-      } catch {
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const p = await loadProfile();
+      const history = await loadHikes();
+      const active = await loadActiveHike();
+      setActiveHike(active);
+      if (p) {
+        const r = readinessScore(p, history);
+        setReadiness(r);
+        setMaxDiff(maxDifficultyAllowed(r));
+        const ranked = rankTrails(p, history, ALL_TRAILS);
+        setTrails(ranked.slice(0, 3));
+        setOtherTrails(ranked.slice(3));
+      } else {
+        setReadiness(null);
+        setMaxDiff(null);
         setTrails([]);
-      } finally {
-        setLoading(false);
+        setOtherTrails([]);
       }
-    })();
+      if (active?.trailId) {
+        const selected = ALL_TRAILS.find((trail) => trail.id === active.trailId) ?? null;
+        setSelectedTrail(selected);
+      } else {
+        setSelectedTrail(null);
+      }
+    } catch {
+      setTrails([]);
+      setOtherTrails([]);
+      setReadiness(null);
+      setMaxDiff(null);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [loadData])
+  );
 
   useEffect(() => {
     if (!activeHike) return;
@@ -128,6 +156,11 @@ export default function TodayPlanScreen() {
           ? `${trails.length} hike${trails.length === 1 ? "" : "s"} fit your preferences today.`
           : "No recommendations yet. Complete onboarding first."}
       </Text>
+      {readiness !== null && maxDiff !== null ? (
+        <Text style={{ marginTop: 4, opacity: 0.8 }}>
+          Readiness {readiness}/4 • Showing {maxDiff === 1 ? "Easy only" : maxDiff === 2 ? "Easy + Moderate" : "all levels"}
+        </Text>
+      ) : null}
       <View style={{ marginTop: 10, marginBottom: 16 }}>
         {activeHike ? (
           <>
@@ -187,15 +220,37 @@ export default function TodayPlanScreen() {
           No recommendations yet. Complete onboarding first.
         </Text>
       ) : (
-        trails.map((t) => (
-          <Card
-            key={t.id}
-            trail={t}
-            disabled={!!activeHike}
-            selected={selectedTrail?.id === t.id}
-            onPress={() => setSelectedTrail(t)}
-          />
-        ))
+        <>
+          <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 8 }}>
+            Recommended Trails
+          </Text>
+          {trails.map((t) => (
+            <Card
+              key={t.id}
+              trail={t}
+              disabled={!!activeHike}
+              selected={selectedTrail?.id === t.id}
+              onPress={() => setSelectedTrail(t)}
+            />
+          ))}
+
+          {otherTrails.length > 0 ? (
+            <>
+              <Text style={{ fontSize: 18, fontWeight: "700", marginVertical: 8 }}>
+                Other Options
+              </Text>
+              {otherTrails.map((t) => (
+                <Card
+                  key={t.id}
+                  trail={t}
+                  disabled={!!activeHike}
+                  selected={selectedTrail?.id === t.id}
+                  onPress={() => setSelectedTrail(t)}
+                />
+              ))}
+            </>
+          ) : null}
+        </>
       )}
     </ScrollView>
   );

@@ -8,6 +8,9 @@ export type HikeSession = {
   trailId?: string;
   trailName?: string;
   distanceMi?: number;
+  actualDistanceMi?: number; // future: GPS total distance
+  actualTimeMin?: number;    // future: GPS-derived moving time
+  elevationGain?: number;    // future: total ascent
   effort?: number;     // 1-10
   enjoyment?: number;  // 1-10
   tags?: string[];
@@ -38,6 +41,9 @@ export type ActiveHike = {
   trailId?: string;
   trailName?: string;
   distanceMi?: number;
+  actualDistanceMi?: number;
+  actualTimeMin?: number;
+  elevationGain?: number;
 };
 
 export async function loadActiveHike(): Promise<ActiveHike | null> {
@@ -66,6 +72,9 @@ export async function endHike() {
     trailId: active.trailId,
     trailName: active.trailName,
     distanceMi: active.distanceMi,
+    actualDistanceMi: active.actualDistanceMi,
+    actualTimeMin: active.actualTimeMin,
+    elevationGain: active.elevationGain,
   };
   await addHike(session);
   await AsyncStorage.removeItem(ACTIVE_KEY);
