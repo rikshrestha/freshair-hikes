@@ -1,4 +1,4 @@
-import geo from "./osm-dfw-trails.json";
+import geo from "../../assets/data/osm-dfw-trails.json";
 import { LatLng } from "../utils/geo";
 
 type Feature = {
