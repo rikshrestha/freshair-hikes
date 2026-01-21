@@ -11,12 +11,14 @@
 - [ ] Add minimal analytics (privacy-conscious) for navigation/trails usage
 - [ ] Improve accessibility and UX polish (spacing/labels/empty states)
 - [ ] Strengthen config/secrets handling and per-env setup
+- [ ] Add multi-region support (DFW + Kathmandu data)
+- [ ] Complete Explore redesign (map-first + filters + region picker)
 
 ## Key Decisions & Architecture
 - Source of truth lives in `/docs`; start with `CONTEXT_INDEX.md`.
 - Path-based navigation + history logging from Sprint 1 is the baseline.
 
 ## Handoff Context (Current Progress)
-- **Last File Edited:** `docs/sprint_status.md`
-- **State:** Sprint 2 tracker initialized; tasks now include prod-readiness items (CI/telemetry/accessibility/config).
-- **Next Step:** Gather Sprint 2 goals with the user, finalize scope, and prioritize the task list.
+- **Last File Edited:** `app/(tabs)/explore.native.tsx`
+- **State:** Explore tab rebuilt (map-first, collapsible sheet, filters/search, GPS recenter), navigation controls polished (GPS dot + lighter cluster), region scaffolding added (DFW + placeholder Kathmandu) with region selector and persistence; web fallbacks added to avoid map bundling errors.
+- **Next Step:** Confirm Sprint 2 scope, finalize dataset for Kathmandu or remove placeholder, and continue production readiness tasks (CI/telemetry/tests). 
