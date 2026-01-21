@@ -25,10 +25,6 @@ export default function RootLayout() {
           options={{ title: "Reflection", headerBackTitle: "Back", headerBackTitleVisible: false }}
         />
         <Stack.Screen
-          name="trails"
-          options={{ title: "Trails", headerBackTitle: "Back", headerBackTitleVisible: false }}
-        />
-        <Stack.Screen
           name="about"
           options={{ title: "About", headerBackTitle: "Back", headerBackTitleVisible: false }}
         />

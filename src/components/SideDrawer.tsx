@@ -4,10 +4,7 @@ import { useRouter } from "expo-router";
 
 const MENU_ITEMS = [
   { label: "Home", route: "/(tabs)/index" },
-  { label: "Trails", route: "/trails" },
   { label: "Saved", route: "/saved" },
-  { label: "Guide", route: "/(tabs)/explore" },
-  { label: "History", route: "/(tabs)/history" },
   { label: "Profile", route: "/(tabs)/profile" },
   { label: "About", route: "/about" },
   { label: "Contact", route: "/contact" },

@@ -1,5 +1,6 @@
-import geo from "../../assets/data/osm-dfw-trails.json";
+import geoDfw from "../../assets/data/osm-dfw-trails.json";
 import { LatLng } from "../utils/geo";
+import { RegionId } from "./regions";
 
 type Feature = {
   geometry?: { type: string; coordinates: any };
@@ -11,8 +12,9 @@ const coordsToLatLng = (coords: [number, number][]) =>
 
 export type OsmPath = { id: string; name?: string; coords: LatLng[]; centroid: LatLng };
 
-export function loadOsmPaths(): OsmPath[] {
-  const feats: Feature[] = (geo as any).features || [];
+export function loadOsmPaths(region: RegionId): OsmPath[] {
+  const geo = region === "dfw" ? (geoDfw as any) : null;
+  const feats: Feature[] = geo?.features || [];
   const paths: OsmPath[] = [];
   feats.forEach((f, idx) => {
     if (!f.geometry || !f.geometry.coordinates) return;

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Picker } from "@react-native-picker/picker";
 import { useFocusEffect } from "expo-router";
 import { loadProfile, saveProfile, UserProfile } from "../../src/storage/profile";
@@ -22,6 +23,7 @@ function formatDate(ms: number) {
 }
 
 export default function ProfileScreen() {
+  const insets = useSafeAreaInsets();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [draft, setDraft] = useState<UserProfile>(DEFAULT_PROFILE);
   const [isEditing, setIsEditing] = useState(false);
@@ -78,7 +80,9 @@ export default function ProfileScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 60, paddingBottom: 32 }}>
+      <ScrollView
+        contentContainerStyle={{ padding: 20, paddingTop: insets.top + 16, paddingBottom: 32 }}
+      >
         <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
           <DrawerTrigger onPress={() => setMenuOpen(true)} />
           <Text style={{ fontSize: 26, fontWeight: "700", marginLeft: 6 }}>Profile</Text>

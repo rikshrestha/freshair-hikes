@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ScrollView, Text, Pressable, View } from "react-native";
 import { useRouter, useFocusEffect } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { loadProfile } from "../storage/profile";
 import { maxDifficultyAllowed, rankTrails, readinessScore, Trail } from "../logic/recommend";
 import { loadActiveHike, startHike, endHike, newId, ActiveHike, loadHikes } from "../storage/hikes";
@@ -12,6 +13,7 @@ import SideDrawer, { DrawerTrigger } from "../components/SideDrawer";
 let ALL_TRAILS: Trail[] = [];
 
 export default function TodayPlanScreen() {
+  const insets = useSafeAreaInsets();
   const [trails, setTrails] = useState<Trail[]>([]);
   const [otherTrails, setOtherTrails] = useState<Trail[]>([]);
   const [loading, setLoading] = useState(true);
@@ -125,7 +127,9 @@ export default function TodayPlanScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 60, paddingBottom: 32 }}>
+      <ScrollView
+        contentContainerStyle={{ padding: 20, paddingTop: insets.top + 16, paddingBottom: 32 }}
+      >
         <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
         <DrawerTrigger onPress={() => setMenuOpen(true)} />
         <Text style={{ fontSize: 26, fontWeight: "700", marginLeft: 6 }}>Today Plan</Text>

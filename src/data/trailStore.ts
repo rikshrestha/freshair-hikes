@@ -1,15 +1,17 @@
-import { TRAILS } from "./trails";
+import { getRegion } from "../storage/region";
+import { getRegionConfig, loadRegionOsmPaths, RegionId } from "./regions";
 import { Trail } from "../logic/recommend";
 import { logEvent } from "../utils/logger";
-import { loadOsmPaths } from "./osmPaths";
 import { haversineMiles } from "../utils/geo";
 
-export async function getTrails(): Promise<Trail[]> {
+export async function getTrails(regionOverride?: RegionId): Promise<Trail[]> {
+  const region = regionOverride ?? (await getRegion());
+  const { trails } = getRegionConfig(region);
   const seen = new Set<string>();
   const deduped: Trail[] = [];
-  const osmPaths = loadOsmPaths();
+  const osmPaths = loadRegionOsmPaths(region);
 
-  for (const t of TRAILS) {
+  for (const t of trails) {
     if (seen.has(t.id)) {
       await logEvent(`Duplicate trail id skipped: ${t.id} (${t.name})`);
       continue;

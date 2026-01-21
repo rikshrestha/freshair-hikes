@@ -1,6 +1,6 @@
 import { Trail } from "../logic/recommend";
 
-export const TRAILS: Trail[] = [
+export const TRAILS_DFW: Trail[] = [
   { id: "osm-1", name: "Abbie's Path", difficulty: "Easy", distanceMi: 0.5, estTimeMin: 20, why: "Approx 0.5 mi from OSM", lat: 32.642955, lng: -97.148665, source: "osm" },
   { id: "osm-2", name: "American Way", difficulty: "Easy", distanceMi: 0.3, estTimeMin: 20, why: "Approx 0.3 mi from OSM", lat: 32.832056, lng: -97.064011, source: "osm" },
   { id: "osm-3", name: "Bachman Greenbelt Trail", difficulty: "Easy", distanceMi: 0.8, estTimeMin: 20, why: "Approx 0.8 mi from OSM", lat: 32.860583, lng: -96.848808, source: "osm" },

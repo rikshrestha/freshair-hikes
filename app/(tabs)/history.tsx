@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect, useRouter } from "expo-router";
 import { clearHikes, HikeSession, loadHikes } from "../../src/storage/hikes";
 import SideDrawer, { DrawerTrigger } from "../../src/components/SideDrawer";
@@ -9,6 +10,7 @@ function formatDate(ms: number) {
 }
 
 export default function HistoryScreen() {
+  const insets = useSafeAreaInsets();
   const [hikes, setHikes] = useState<HikeSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -55,7 +57,9 @@ export default function HistoryScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 60, paddingBottom: 32 }}>
+      <ScrollView
+        contentContainerStyle={{ padding: 20, paddingTop: insets.top + 16, paddingBottom: 32 }}
+      >
         <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
           <DrawerTrigger onPress={() => setMenuOpen(true)} />
           <Text style={{ fontSize: 26, fontWeight: "700", marginLeft: 6 }}>Hike History</Text>

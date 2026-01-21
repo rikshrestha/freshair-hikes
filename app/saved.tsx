@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { FlatList, View, Text } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import SideDrawer, { DrawerTrigger } from "../src/components/SideDrawer";
 import TrailCard from "../src/components/TrailCard";
@@ -8,6 +9,7 @@ import { loadFavorites, toggleFavorite } from "../src/storage/favorites";
 import { Trail } from "../src/logic/recommend";
 
 export default function SavedScreen() {
+  const insets = useSafeAreaInsets();
   const [menuOpen, setMenuOpen] = useState(false);
   const [trails, setTrails] = useState<Trail[]>([]);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
@@ -29,7 +31,15 @@ export default function SavedScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingTop: 60, paddingBottom: 12 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: 20,
+          paddingTop: insets.top + 16,
+          paddingBottom: 12,
+        }}
+      >
         <DrawerTrigger onPress={() => setMenuOpen(true)} />
         <Text style={{ fontSize: 26, fontWeight: "700", marginLeft: 6 }}>Saved Trails</Text>
       </View>

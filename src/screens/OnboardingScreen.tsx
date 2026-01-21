@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { View, Text, Button, ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Picker } from "@react-native-picker/picker";
 import { saveProfile, UserProfile } from "../storage/profile";
 
@@ -8,6 +9,7 @@ export default function OnboardingScreen({
 }: {
   onDone: () => void;
 }) {
+  const insets = useSafeAreaInsets();
   const ageRanges = useMemo(() => ["18-24", "25-34", "35-44", "45-54", "55+"], []);
   const paces = useMemo(() => ["slow", "normal", "fast"], []);
   const distances = useMemo(() => ["1-2", "3-5", "6-10"], []);
@@ -37,55 +39,43 @@ export default function OnboardingScreen({
   return (
     <ScrollView
       style={{ flex: 1 }}
-      contentContainerStyle={{ padding: 20, paddingBottom: 32 }}
+      contentContainerStyle={{ padding: 20, paddingTop: insets.top + 20, paddingBottom: 32 }}
     >
       <View style={{ justifyContent: "center" }}>
-      <Text style={{ fontSize: 26, marginBottom: 8 }}>FreshAir Hikes</Text>
-      <Text style={{ marginBottom: 20 }}>
-        Let’s personalize your hiking experience.
-      </Text>
+        <Text style={{ fontSize: 26, marginBottom: 8 }}>FreshAir Hikes</Text>
+        <Text style={{ marginBottom: 20 }}>Let’s personalize your hiking experience.</Text>
 
-      <Text>Age range</Text>
-      <Picker selectedValue={ageRange} onValueChange={setAgeRange}>
-        {ageRanges.map((v) => (
-          <Picker.Item key={v} label={v} value={v} />
-        ))}
-      </Picker>
+        <Text>Age range</Text>
+        <Picker selectedValue={ageRange} onValueChange={setAgeRange}>
+          {ageRanges.map((v) => (
+            <Picker.Item key={v} label={v} value={v} />
+          ))}
+        </Picker>
 
-      <Text>Pace</Text>
-      <Picker selectedValue={pace} onValueChange={setPace}>
-        {paces.map((v) => (
-          <Picker.Item key={v} label={v} value={v} />
-        ))}
-      </Picker>
+        <Text>Pace</Text>
+        <Picker selectedValue={pace} onValueChange={setPace}>
+          {paces.map((v) => (
+            <Picker.Item key={v} label={v} value={v} />
+          ))}
+        </Picker>
 
-      <Text>Typical distance (miles)</Text>
-      <Picker
-        selectedValue={distanceBand}
-        onValueChange={setDistanceBand}
-      >
-        {distances.map((v) => (
-          <Picker.Item key={v} label={v} value={v} />
-        ))}
-      </Picker>
+        <Text>Typical distance (miles)</Text>
+        <Picker selectedValue={distanceBand} onValueChange={setDistanceBand}>
+          {distances.map((v) => (
+            <Picker.Item key={v} label={v} value={v} />
+          ))}
+        </Picker>
 
-      <Text>Weekly activity</Text>
-      <Picker
-        selectedValue={weeklyActivity}
-        onValueChange={setWeeklyActivity}
-      >
-        {weekly.map((v) => (
-          <Picker.Item key={v} label={v} value={v} />
-        ))}
-      </Picker>
+        <Text>Weekly activity</Text>
+        <Picker selectedValue={weeklyActivity} onValueChange={setWeeklyActivity}>
+          {weekly.map((v) => (
+            <Picker.Item key={v} label={v} value={v} />
+          ))}
+        </Picker>
 
-      <View style={{ marginTop: 16 }}>
-        <Button
-          title={saving ? "Saving..." : "Continue"}
-          onPress={handleContinue}
-          disabled={saving}
-        />
-      </View>
+        <View style={{ marginTop: 16 }}>
+          <Button title={saving ? "Saving..." : "Continue"} onPress={handleContinue} disabled={saving} />
+        </View>
       </View>
     </ScrollView>
   );

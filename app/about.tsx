@@ -1,13 +1,17 @@
 import { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import SideDrawer, { DrawerTrigger } from "../src/components/SideDrawer";
 
 export default function AboutScreen() {
+  const insets = useSafeAreaInsets();
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 60, paddingBottom: 32 }}>
+      <ScrollView
+        contentContainerStyle={{ padding: 20, paddingTop: insets.top + 16, paddingBottom: 32 }}
+      >
         <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
           <DrawerTrigger onPress={() => setMenuOpen(true)} />
           <Text style={{ fontSize: 26, fontWeight: "700", marginLeft: 6 }}>About FreshAir Hikes</Text>
