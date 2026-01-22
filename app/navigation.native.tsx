@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { View, Text, Pressable, ScrollView, StyleSheet, Platform } from "react-native";
+import { View, Text, Pressable, ScrollView, StyleSheet, Platform, Animated } from "react-native";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -685,15 +685,53 @@ export default function NavigationScreen() {
           </Text>
         ) : (
           <>
+            {/* Progress Bar */}
+            <View style={{ marginTop: 8, height: 6, backgroundColor: "#f0f0f0", borderRadius: 3, overflow: "hidden" }}>
+              <Animated.View
+                style={{
+                  height: "100%",
+                  width: `${Math.min(100, Math.max(0, (traveledMiles / totalMiles) * 100))}%`,
+                  backgroundColor: offRoute ? "#ff6b6b" : "#4CAF50",
+                  borderRadius: 3,
+                }}
+              />
+            </View>
+            <Text style={{ marginTop: 8, fontSize: 16, fontWeight: "600" }}>
+              {Math.round((traveledMiles / totalMiles) * 100)}% Complete
+            </Text>
+
+            {/* Distance Info */}
             <Text style={{ marginTop: 4, opacity: 0.8 }}>
               Remaining: ~{remainingMiles.toFixed(2)} mi of ~{totalMiles.toFixed(2)} mi
             </Text>
+
+            {/* Next Step with better formatting */}
             {nextStep ? (
-              <Text style={{ marginTop: 4, fontWeight: "600" }}>Next: {nextStep.instruction}</Text>
+              <>
+                <Text style={{ marginTop: 8, fontWeight: "600", color: "#2c3e50" }}>
+                  📍 Next Direction:
+                </Text>
+                <Text style={{ marginTop: 2, fontWeight: "500", backgroundColor: "#f8f9fa", padding: 8, borderRadius: 6 }}>
+                  {nextStep.instruction} ({(nextStep.distanceMeters / 1609.34).toFixed(2)} mi)
+                </Text>
+              </>
             ) : null}
-            <Text style={{ marginTop: 4, opacity: 0.8 }}>
-              Covered: {traveledMiles.toFixed(2)} mi • Remaining: {remainingMiles.toFixed(2)} mi
-            </Text>
+
+            {/* Detailed Stats */}
+            <View style={{ marginTop: 8, flexDirection: "row", justifyContent: "space-between" }}>
+              <View style={{ alignItems: "center" }}>
+                <Text style={{ fontSize: 12, opacity: 0.7 }}>Covered</Text>
+                <Text style={{ fontWeight: "600", marginTop: 2 }}>{traveledMiles.toFixed(2)} mi</Text>
+              </View>
+              <View style={{ alignItems: "center" }}>
+                <Text style={{ fontSize: 12, opacity: 0.7 }}>Remaining</Text>
+                <Text style={{ fontWeight: "600", marginTop: 2 }}>{remainingMiles.toFixed(2)} mi</Text>
+              </View>
+              <View style={{ alignItems: "center" }}>
+                <Text style={{ fontSize: 12, opacity: 0.7 }}>Total</Text>
+                <Text style={{ fontWeight: "600", marginTop: 2 }}>{totalMiles.toFixed(2)} mi</Text>
+              </View>
+            </View>
           </>
         )}
         {arrived ? <Text style={{ marginTop: 4, fontWeight: "700" }}>You’ve reached the end. Good job!</Text> : null}
