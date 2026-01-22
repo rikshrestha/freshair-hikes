@@ -1,5 +1,7 @@
 # FreshAir Hikes (Expo)
 
+FreshAir Hikes is a local-first hiking companion for iOS/Android with map-first discovery, path-based navigation (OSM geometry with Mapbox fallback), offline-friendly storage (favorites/history/conditions), and simple reflections/history. Explore trails on the map, start navigation with GPS recenter and off-route handling, and keep everything on-device by default.
+
 ## Quick start
 ```bash
 npm install
